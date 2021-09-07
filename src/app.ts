@@ -7,6 +7,7 @@ import morgan from "morgan"
 import {error, errorRes} from './middleware/error'
 
 import {index} from './routes/index'
+import router from './routes/document'
 
 const app = express();
 const port = 1337;
@@ -19,40 +20,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 app.use('/', index);
-
-
-// // Testing routes with method
-// app.get("/user", (req, res) => {
-//     res.json({
-//         data: {
-//             msg: "Got a GET request"
-//         }
-//     });
-// });
-
-// app.post("/user", (req, res) => {
-//     res.json({
-//         data: {
-//             msg: "Got a POST request"
-//         }
-//     });
-// });
-
-// app.put("/user", (req, res) => {
-//     res.json({
-//         data: {
-//             msg: "Got a PUT request"
-//         }
-//     });
-// });
-
-// app.delete("/user", (req, res) => {
-//     res.json({
-//         data: {
-//             msg: "Got a DELETE request"
-//         }
-//     });
-// });
+app.use('/document', router);
 
 
 app.use(error)
