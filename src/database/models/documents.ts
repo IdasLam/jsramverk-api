@@ -9,8 +9,8 @@ type DocumentType = {
 
 export const findDocument = async (_id: string) => {
     const {Documents} = await DB
-    
-    return await Documents.findById(_id)
+
+    return await Documents.findOne({_id}).lean()
 }
 
 
@@ -26,7 +26,7 @@ export const saveDocument = async ({_id, title, content}: DocumentType) => {
 export const allDocuments = async () => {
     const {Documents} = await DB
 
-    return await Documents.find({})
+    return await Documents.find({}).lean()
 }
 
 export const newDocument = async () => {
@@ -42,5 +42,5 @@ export const newDocument = async () => {
 export const deleteDocument = async (_id: string) => {
     const {Documents} = await DB
 
-    return Documents.deleteOne({_id})
+    await Documents.deleteOne({_id})
 }
