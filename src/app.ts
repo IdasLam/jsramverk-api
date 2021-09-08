@@ -13,6 +13,7 @@ const app = express();
 const port = 1337;
 
 app.use(cors());
+app.use(express.json())
 
 if (process.env.NODE_ENV !== 'test') {
     // use morgan to log at command line
