@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import docSchema from './documents'
 
-const dsn =  process.env.DBWEBB_DSN || "mongodb://localhost:27017/mumin";
+const dsn =  `mongodb+srv://${process.env.USERNAME}:${process.env.PASSWORD}@cluster0.omajj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 
 const connection = mongoose.connect(dsn, {})
 
