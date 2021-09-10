@@ -16,7 +16,7 @@ router.get('/all', async (req, res) => {
 
 router.post('/find', async (req, res) => {
     const id = req.body.id as string
-    const doc = await document.findDocument(id)
+    const doc = await document.findDocument(id) as Record<string, unknown>
 
     const data = {
         data: {
