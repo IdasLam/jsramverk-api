@@ -10,7 +10,7 @@ import {index} from './routes/index'
 import router from './routes/document'
 
 const app = express();
-const port = 1337;
+const port = process.env.PORT || 1337;
 
 app.use(cors());
 app.use(express.json())
