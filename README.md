@@ -1,3 +1,5 @@
+[![Build Status](https://app.travis-ci.com/IdasLam/jsramverk-api.svg?branch=master)](https://app.travis-ci.com/IdasLam/jsramverk-api)
+
 # JSramverk-API
 This api is used in course DV1612 H21 lp1 at BTH.
 
