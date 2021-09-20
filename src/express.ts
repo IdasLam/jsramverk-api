@@ -2,13 +2,12 @@ import express from "express"
 import cors from 'cors'
 import morgan from "morgan"
 import {error, errorRes} from './middleware/error'
-
 import {index} from './routes/index'
 import router from './routes/document'
 
-const app = express();
+const app = express()
 
-app.use(cors());
+app.use(cors())
 app.use(express.json())
 
 if (process.env.NODE_ENV !== 'test') {
