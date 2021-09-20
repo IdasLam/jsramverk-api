@@ -16,22 +16,30 @@ This api is used in course DV1612 H21 lp1 at BTH.
 
 
 
-## Installation & Start
+## Installation & Setup
 The following steps are needed to get the API working.
 
+### Mongodb Atlas
+Create a .env file with following credentials
+```
+USERNAME=guest
+PASSWORD=guest
+```
+
+### Installation
 ```
 npm i
 npm i -g nodemon OR npm i -D nodemon
 ```
 
-### `development`:
+#### `development`:
 ```
 npm run dev
 ```
 The api will open on port 1337.
 
 
-### `production`:
+#### `production`:
 ```
 npm run build
 npm run start
