@@ -11,11 +11,11 @@ router.post('/login', async (req, res) => {
     const validUser = await user.validateUser(username, password)
 
     if (!validUser) {
-        res.send({data: 'Invalid password or username'}).status(403)
+        return res.send({data: 'Invalid password or username'}).status(403)
     }
 
     // create jwt
-    const token = jwt.sign({username, password}, secret, { expiresIn: '1h'});
+    const token = jwt.sign({username}, secret, { expiresIn: '1h'});
 
     res.send({data: {status: 'ok', token}})
 })
@@ -26,7 +26,7 @@ router.post('/signup', async (req, res) => {
     await user.createUser(username, password)
     
     // create jwt
-    const token = jwt.sign({username, password}, secret, { expiresIn: '1h'});
+    const token = jwt.sign({username}, secret, { expiresIn: '1h'});
 
     res.send({data: {status: 'ok', token}})
 })
