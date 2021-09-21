@@ -5,12 +5,13 @@ type DocumentType = {
     _id: string, 
     title: string,
     content: string
+    access?: string[]
 }
 
-export const findDocument = async (_id: string) => {
+export const findDocument = async (_id: string, username: string) => {
     const {Documents} = await DB
 
-    return await Documents.findOne({_id}).lean()
+    return await Documents.findOne({_id, access: username}).lean()
 }
 
 
@@ -23,16 +24,16 @@ export const saveDocument = async ({_id, title, content}: DocumentType) => {
     })
 }
 
-export const allDocuments = async () => {
+export const allDocuments = async (username: string) => {
     const {Documents} = await DB
 
-    return await Documents.find({}).lean()
+    return await Documents.find({access: username}).lean()
 }
 
-export const newDocument = async () => {
+export const newDocument = async (username: string) => {
     const {Documents} = await DB
 
-    const doc = new Documents({})
+    const doc = new Documents({access: [username]})
 
     await doc.save()
 
@@ -45,10 +46,10 @@ export const deleteDocument = async (_id: string) => {
     await Documents.deleteOne({_id})
 }
 
-export const addDocumentAccess = async (_id: string, username: string[]) => {
+export const addDocumentAccess = async (_id: string, usernames: string[], username: string) => {
     const {Documents} = await DB
 
-    await Documents.findByIdAndUpdate(_id, {$push : username}, { 'upsert': true }) 
+    await Documents.findByIdAndUpdate(_id, {$push : usernames}, { 'upsert': true }) 
 
-    return findDocument(_id)
+    return findDocument(_id, username)
 }

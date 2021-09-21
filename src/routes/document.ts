@@ -3,9 +3,12 @@ import * as document from '../database/models/documents'
 
 import router from './router'
 import {io} from '../app'
+import decoder from '../helper/jwt'
+
 
 router.get('/all', async (req, res) => {
-    const allDocs = await document.allDocuments()
+    const {username} = await decoder(req)
+    const allDocs = await document.allDocuments(username)
 
     const data = {
         data: allDocs
@@ -15,8 +18,9 @@ router.get('/all', async (req, res) => {
 });
 
 router.post('/find', async (req, res) => {
-    const id = req.body.id as string
-    const doc = await document.findDocument(id) as Record<string, unknown>
+    const {username} = await decoder(req)
+    const {id} = req.body
+    const doc = await document.findDocument(id, username) as Record<string, unknown>
 
     const data = {
         data: {
@@ -28,11 +32,12 @@ router.post('/find', async (req, res) => {
 });
 
 router.post('/save', async (req, res) => {
+    const {username} = await decoder(req)
     const {_id, title, content} = req.body
 
     try {
         if (!_id) {
-            const id = (await document.newDocument())._id as string
+            const id = (await document.newDocument(username))._id as string
             await document.saveDocument({_id: id, title, content})
 
             const data = {
@@ -68,10 +73,11 @@ router.post('/delete', async (req, res) => {
 });
 
 router.post('/addAccess', async (req, res) => {
-    const {_id, username} = req.body
+    const {_id} = req.body
+    const {username} = await decoder(req)
 
     try {
-        const doc = await document.addDocumentAccess(_id, username)
+        const doc = await document.addDocumentAccess(_id, username, username)
 
         io.in(_id).emit("doc", doc)
 
