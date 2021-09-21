@@ -36,3 +36,5 @@ io.on('connection', (socket) => {
         document.saveDocument(doc)
     })
 });
+
+export {io}
