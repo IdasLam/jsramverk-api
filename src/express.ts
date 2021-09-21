@@ -4,6 +4,9 @@ import morgan from "morgan"
 import {error, errorRes} from './middleware/error'
 import {index} from './routes/index'
 import router from './routes/document'
+import login from './routes/login'
+
+import verifyToken from './middleware/jwt'
 
 const app = express()
 
@@ -15,8 +18,8 @@ if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('combined')); // 'combined' outputs the Apache style LOGs
 }
 
-app.use('/', index);
-app.use('/document', router);
+app.use('/', [index, login]);
+app.use('/document', verifyToken, router);
 
 
 app.use(error)
