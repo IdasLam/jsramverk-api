@@ -44,3 +44,11 @@ export const deleteDocument = async (_id: string) => {
 
     await Documents.deleteOne({_id})
 }
+
+export const addDocumentAccess = async (_id: string, username: string[]) => {
+    const {Documents} = await DB
+
+    await Documents.findByIdAndUpdate(_id, {$push : username}, { 'upsert': true }) 
+
+    return findDocument(_id)
+}

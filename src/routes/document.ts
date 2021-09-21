@@ -1,8 +1,8 @@
-import Express from 'express'
 import 'express-async-errors'
 import * as document from '../database/models/documents'
 
-const router = Express.Router()
+import router from './router'
+import {io} from '../app'
 
 router.get('/all', async (req, res) => {
     const allDocs = await document.allDocuments()
@@ -56,24 +56,26 @@ router.post('/save', async (req, res) => {
     }
 });
 
-// router.get('/new', async (req, res) => {
-//     const doc = await document.newDocument()
-
-//     const data = {
-//         data: {
-//             ...doc
-//         }
-//     };
-
-//     res.json(data);
-// });
-
 router.post('/delete', async (req, res) => {
     const {_id} = req.body
 
     try {
         await document.deleteDocument(_id)
         res.send(`${_id} has been deleted`)
+    } catch (error) {
+        throw new Error()
+    }
+});
+
+router.post('/addAccess', async (req, res) => {
+    const {_id, username} = req.body
+
+    try {
+        const doc = await document.addDocumentAccess(_id, username)
+
+        io.in(_id).emit("doc", doc)
+
+        res.send({data: 'Access added'})
     } catch (error) {
         throw new Error()
     }
