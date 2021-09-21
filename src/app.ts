@@ -24,16 +24,23 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-    socket.on('create', async (id) => {
+    socket.on('create', async ({id, username}) => {
+        if (!id) return
+
         socket.join(id);
 
-        socket.emit('doc', await document.findDocument(id))
+        socket.emit('doc', await document.findDocument(id, username))
     });
 
     socket.on('updatedDoc', (doc: Doc) => {
         socket.to(doc._id).emit('doc', doc)
 
         document.saveDocument(doc)
+
+    })
+
+    socket.on('close', () => {
+        socket.disconnect()
     })
 });
 
