@@ -17,6 +17,12 @@ router.post('/login', async (req, res) => {
     // create jwt
     const token = jwt.sign({username}, secret, { expiresIn: '1h'});
 
+    res.cookie('token', token, {
+        secure: true,
+        httpOnly: true,
+        sameSite: 'none'
+    })
+
     res.send({data: {status: 'ok', token}})
 })
 
@@ -28,7 +34,23 @@ router.post('/signup', async (req, res) => {
     // create jwt
     const token = jwt.sign({username}, secret, { expiresIn: '1h'});
 
-    res.send({data: {status: 'ok', token}})
+    res.cookie('token', token, {
+        secure: true,
+        httpOnly: true,
+        sameSite: 'none'
+    }).send({data: {status: 'ok', token}})
+})
+
+router.get('/status', (req, res) => {
+    const token = req.cookies.token as string
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.json({authorized: false})
+        }
+
+        return res.json({authorized: true})
+    });
 })
 
 export default router
