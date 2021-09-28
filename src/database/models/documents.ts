@@ -8,10 +8,10 @@ type DocumentType = {
     access?: string[]
 }
 
-export const findDocument = async (_id: string, username: string) => {
+export const findDocument = async (_id: string) => {
     const {Documents} = await DB
 
-    return await Documents.findOne({_id, access: username}).lean()
+    return await Documents.findOne({_id}).lean()
 }
 
 
@@ -46,10 +46,10 @@ export const deleteDocument = async (_id: string) => {
     await Documents.deleteOne({_id})
 }
 
-export const addDocumentAccess = async (_id: string, usernames: string[], username: string) => {
+export const addDocumentAccess = async (_id: string, usernames: string[]) => {
     const {Documents} = await DB
 
-    await Documents.findByIdAndUpdate(_id, {$push : usernames}, { 'upsert': true }) 
+    await Documents.updateOne({_id}, {access: usernames}) 
 
-    return findDocument(_id, username)
+    return findDocument(_id)
 }
