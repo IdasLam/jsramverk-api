@@ -20,10 +20,10 @@ router.post('/login', async (req, res) => {
     res.cookie('token', token, {
         secure: true,
         httpOnly: true,
-        sameSite: 'none'
+        sameSite: 'none',
     })
 
-    res.send({data: {status: 'ok', token}})
+    return res.send({data: {status: 'ok', token}})
 })
 
 router.post('/signup', async (req, res) => {
@@ -51,6 +51,16 @@ router.get('/status', (req, res) => {
 
         return res.json({authorized: true})
     });
+})
+
+router.get('/logout', (req, res) => {
+    res.clearCookie('token', {
+        secure: true,
+        httpOnly: true,
+        sameSite: 'none',
+    });
+
+    return res.json({info: 'logged out'})
 })
 
 export default router
