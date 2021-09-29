@@ -4,6 +4,8 @@ dotenv.config()
 import app from './express'
 import { Server } from 'socket.io'
 import * as document from './database/models/documents'
+import cookie from 'cookie'
+import jwt from 'jsonwebtoken'
 
 type Doc = {
     _id: string
@@ -20,23 +22,107 @@ const server = app.listen(port, () => console.log(`Example API listening on port
 const io = new Server(server, {
     cors: {
         origin: ["http://localhost:3000", "https://www.student.bth.se"],
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST"],
+        credentials: true
     }
 });
 
-io.on('connection', (socket) => {
-    socket.on('create', async ({id}) => {
-        if (!id) return
 
-        socket.join(id);
+const getUsername = (cookiestr: string) => {
+    if (!!cookiestr) {
+        const { token } = cookie.parse(cookiestr || '')
+        const { username } = jwt.decode(token) as Record<string, string>
 
-        socket.emit('doc', await document.findDocument(id))
+        return username
+    }
+}
+
+const allUsers = (documents: any) => {
+    const users = new Set()
+    
+    documents.forEach((doc: any) => {
+        doc.access.forEach((user: string) => users.add(user))
     });
 
-    socket.on('updatedDoc', (doc: Doc) => {
+    return Array.from(users)
+}
+
+io.on('connection', (socket) => {
+    socket.on('login', async () => {
+        if (!!socket.handshake.headers.cookie) {
+            const username = getUsername(socket.handshake.headers.cookie)
+            await socket.join(`username=${username}`)
+
+            const allDoc = await document.allDocuments(username)
+
+            const users = allUsers(allDoc)
+            users.forEach(async (user: string) => {
+                const allUsersDoc = await document.allDocuments(user)
+
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            })
+        }
+    })
+
+    socket.on('create', async (id: string) => {
+        if (!!socket.handshake.headers.cookie) {
+            const username = getUsername(socket.handshake.headers.cookie)
+
+            const allDoc = await document.allDocuments(username)
+
+            const users = allUsers(allDoc)
+            users.forEach(async (user: string) => {
+                const allUsersDoc = await document.allDocuments(user)
+
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            })
+        }
+
+        if (!id) return
+
+
+        await socket.join(id);
+        const doc = await document.findDocument(id)
+
+        io.in(id).emit('doc', doc)
+    });
+
+    socket.on('updatedDoc', async (doc: Doc) => {
         socket.to(doc._id).emit('doc', doc)
 
+        if (!!socket.handshake.headers.cookie) {
+            const username = getUsername(socket.handshake.headers.cookie)
+            
+            await socket.join(`username=${username}`)
+
+            const allDoc = await document.allDocuments(username)
+            
+            const users = allUsers(allDoc)
+            users.forEach(async (user: string) => {
+                const allUsersDoc = await document.allDocuments(user)
+
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            })
+        }
+
         document.saveDocument(doc)
+    })
+
+    socket.on('refreshDocs', async () => {
+        if (!!socket.handshake.headers.cookie) {
+            const username = getUsername(socket.handshake.headers.cookie)
+            
+            await socket.join(`username=${username}`)
+
+            const allDoc = await document.allDocuments(username)
+            
+            const users = allUsers(allDoc)
+            users.forEach(async (user: string) => {
+                const allUsersDoc = await document.allDocuments(user)
+
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            })
+        }
     })
 
     socket.on('updatedAcess', async (doc: Doc) => {
