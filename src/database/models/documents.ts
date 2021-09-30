@@ -8,7 +8,7 @@ type DocumentType = {
     access?: string[]
 }
 
-export const findDocument = async (_id: string) => {
+export const findDocument = async (_id: string): Promise<DocumentType> => {
     const {Documents} = await DB
 
     return await Documents.findOne({_id}).lean()
