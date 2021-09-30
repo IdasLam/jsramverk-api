@@ -14,7 +14,7 @@ const app = express()
 app.enable('trust proxy') 
 
 app.use(cors({
-    origin: ["http://localhost:3000", "https://www.student.bth.se/"],
+    origin: ["http://localhost:3000", "https://www.student.bth.se"],
     credentials: true,
 }))
 app.use(express.json())
