@@ -48,6 +48,9 @@ const allUsers = (documents: any) => {
 }
 
 io.on('connection', (socket) => {
+    const username = getUsername(socket.handshake.headers.cookie)
+    socket.join(`username=${username}`)
+
     socket.on('login', async () => {
         if (!!socket.handshake.headers.cookie) {
             const username = getUsername(socket.handshake.headers.cookie)
@@ -64,39 +67,23 @@ io.on('connection', (socket) => {
         }
     })
 
+    socket.on('getDoc', async (id: string) => {
+        socket.emit('doc', await document.findDocument(id))
+    })
+
     socket.on('create', async (id: string) => {
-        if (!!socket.handshake.headers.cookie) {
-            const username = getUsername(socket.handshake.headers.cookie)
-
-            const allDoc = await document.allDocuments(username)
-
-            const users = allUsers(allDoc)
-            users.forEach(async (user: string) => {
-                const allUsersDoc = await document.allDocuments(user)
-
-                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
-            })
-        }
-
         if (!id) return
-
 
         await socket.join(id);
         const doc = await document.findDocument(id)
 
         io.in(id).emit('doc', doc)
-    });
-
-    socket.on('updatedDoc', async (doc: Doc) => {
-        socket.to(doc._id).emit('doc', doc)
 
         if (!!socket.handshake.headers.cookie) {
             const username = getUsername(socket.handshake.headers.cookie)
-            
-            await socket.join(`username=${username}`)
 
             const allDoc = await document.allDocuments(username)
-            
+
             const users = allUsers(allDoc)
             users.forEach(async (user: string) => {
                 const allUsersDoc = await document.allDocuments(user)
@@ -104,19 +91,55 @@ io.on('connection', (socket) => {
                 io.in(`username=${user}`).emit('allDocs', allUsersDoc)
             })
         }
+    });
 
-        document.saveDocument(doc)
+    socket.on('updatedDoc', async (doc: Doc) => {
+        socket.to(doc._id).emit('doc', doc)
+
+        await document.saveDocument(doc)
+
+        if (!!socket.handshake.headers.cookie) {
+            const username = getUsername(socket.handshake.headers.cookie)
+            
+            const allDoc = await document.allDocuments(username)
+            
+            const users = allUsers(allDoc)
+            users.forEach(async (user: string) => {
+                if (user === username) return
+
+                const allUsersDoc = await document.allDocuments(user)
+
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            })
+        }
+
+    })
+
+    socket.on('delete', async (id, cb) => {
+        //...delte
+        const doc = (await document.findDocument(id)) as Doc
+        await document.deleteDocument(id)
+
+        await Promise.all(doc.access.map(async (user) => {
+            const allUsersDoc = await document.allDocuments(user)
+
+            io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+        }))
+        cb()
     })
 
     socket.on('refreshDocs', async () => {
         if (!!socket.handshake.headers.cookie) {
             const username = getUsername(socket.handshake.headers.cookie)
             
-            await socket.join(`username=${username}`)
-
             const allDoc = await document.allDocuments(username)
             
             const users = allUsers(allDoc)
+
+            if (allDoc.length === 0) {
+                return 
+            }
+
             users.forEach(async (user: string) => {
                 const allUsersDoc = await document.allDocuments(user)
 
@@ -126,9 +149,25 @@ io.on('connection', (socket) => {
     })
 
     socket.on('updatedAcess', async (doc: Doc) => {
-        io.in(doc._id).emit('doc', doc) 
+        const oldDoc = await document.findDocument(doc._id)
+        await document.addDocumentAccess(doc._id, doc.access)
+        const newDoc = await document.findDocument(doc._id)
+
+        const isAdding = newDoc.access.length > oldDoc.access.length
+
+
+        const docToLoop = isAdding ? newDoc : oldDoc
         
-        document.addDocumentAccess(doc._id, doc.access)
+        if (!!socket.handshake.headers.cookie) {
+            await Promise.all(docToLoop.access.map(async (user: string) => {
+                const allUsersDoc = await document.allDocuments(user) as Doc[]
+                
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            }))
+            
+            const updatedDoc = await document.findDocument(doc._id)
+            io.in(newDoc._id).emit('doc', newDoc)
+        }
     })
 
     socket.on('close', () => {
