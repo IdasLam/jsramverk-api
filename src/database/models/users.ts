@@ -6,7 +6,7 @@ const salt = bcrypt.genSaltSync(10)
 export const validateUser = async (username: string, password: string) => {
     const {Users} = await DB
 
-    const hash = (await Users.findOne({username})).password
+    const hash = (await Users.findOne({username}) as any).password
 
     const validUser = bcrypt.compareSync(password, hash)
 
