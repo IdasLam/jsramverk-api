@@ -67,17 +67,11 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('getDoc', async (id: string) => {
-        socket.emit('doc', await document.findDocument(id))
-    })
-
     socket.on('create', async (id: string) => {
         if (!id) return
 
         await socket.join(id);
         const doc = await document.findDocument(id)
-
-        io.in(id).emit('doc', doc)
 
         if (!!socket.handshake.headers.cookie) {
             const username = getUsername(socket.handshake.headers.cookie)
@@ -94,10 +88,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('updatedDoc', async (doc: Doc) => {
-        socket.to(doc._id).emit('doc', doc)
-
         await document.saveDocument(doc)
-
+        
         if (!!socket.handshake.headers.cookie) {
             const username = getUsername(socket.handshake.headers.cookie)
             
@@ -105,6 +97,7 @@ io.on('connection', (socket) => {
             
             const users = allUsers(allDoc)
             users.forEach(async (user: string) => {
+                
                 if (user === username) return
 
                 const allUsersDoc = await document.allDocuments(user)
@@ -165,8 +158,6 @@ io.on('connection', (socket) => {
                 io.in(`username=${user}`).emit('allDocs', allUsersDoc)
             }))
             
-            const updatedDoc = await document.findDocument(doc._id)
-            io.in(newDoc._id).emit('doc', newDoc)
         }
     })
 
