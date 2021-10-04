@@ -8,8 +8,15 @@ import login from './routes/login'
 import cookieParser from 'cookie-parser'
 
 import verifyToken from './middleware/jwt'
+import { GraphQLSchema } from "graphql"
+import RootQueryType from "./graphql/root"
+import {graphqlHTTP} from 'express-graphql'
 
 const app = express()
+
+const schema = new GraphQLSchema({
+    query: RootQueryType
+})
 
 app.enable('trust proxy') 
 
@@ -27,6 +34,10 @@ if (process.env.NODE_ENV !== 'test') {
 
 app.use('/', [index, login]);
 app.use('/document', verifyToken, router);
+app.use('/graphql', verifyToken, graphqlHTTP({
+    schema: schema,
+    graphiql: true,
+}));
 
 
 app.use(error)
