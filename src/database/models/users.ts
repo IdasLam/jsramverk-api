@@ -23,3 +23,11 @@ export const createUser = async (username: string, password: string) => {
 
     return user
 }
+
+export const findUser = async (username: string) => {
+    const {Users} = await DB
+
+    const user = (await Users.findOne({username}) as any)
+
+    return user
+}
