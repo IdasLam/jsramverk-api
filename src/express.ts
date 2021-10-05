@@ -36,7 +36,7 @@ app.use('/', [index, login]);
 app.use('/document', verifyToken, router);
 app.use('/graphql', verifyToken, graphqlHTTP({
     schema: schema,
-    graphiql: true,
+    graphiql: false,
 }));
 
 
