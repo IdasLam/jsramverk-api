@@ -4,6 +4,7 @@ import * as document from '../database/models/documents'
 import router from './router'
 import {io} from '../app'
 import decoder from '../helper/jwt'
+import generatePdf from '../../src/helper/puppeteer'
 
 
 router.get('/all', async (req, res) => {
@@ -70,6 +71,16 @@ router.post('/delete', async (req, res) => {
     } catch (error) {
         throw new Error()
     }
+});
+
+router.post('/download-pdf', async (req, res) => {
+    const {_id} = req.body
+    const doc = await document.findDocument(_id)
+
+    const buffer = await generatePdf(doc.content)
+
+    res.header('Content-type','application/pdf')
+    res.send(buffer)
 });
 
 export default router
