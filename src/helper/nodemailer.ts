@@ -8,8 +8,14 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+const validateEmail = (email: string) => {
+    const re =
+        /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    return re.test(email)
+}
+
 export const sendInvite = (users: string[], documentName: string) => {
-    const recipients = users.join(", ")
+    const recipients = users.filter(user => validateEmail(user)? user : '').join(", ")
     return new Promise((resolve, reject ) => {
         transporter.sendMail({
             from: '"jsramverk app" <testmail.idal@gmail.com>', // sender address
