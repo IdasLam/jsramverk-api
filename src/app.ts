@@ -6,6 +6,7 @@ import { Server } from 'socket.io'
 import * as document from './database/models/documents'
 import cookie from 'cookie'
 import jwt from 'jsonwebtoken'
+import { sendInvite } from './helper/nodemailer'
 
 type Doc = {
     _id: string
@@ -148,7 +149,6 @@ io.on('connection', (socket) => {
 
         const isAdding = newDoc.access.length > oldDoc.access.length
 
-
         const docToLoop = isAdding ? newDoc : oldDoc
         
         if (!!socket.handshake.headers.cookie) {
@@ -157,6 +157,15 @@ io.on('connection', (socket) => {
                 
                 io.in(`username=${user}`).emit('allDocs', allUsersDoc)
             }))
+
+            if (isAdding) {
+                const oldList = oldDoc.access
+                const newList = newDoc.access
+                const newUsers = newList.filter(user => !oldList.includes(user))
+
+                // Send mail to new users
+                await sendInvite(newUsers, doc.title)
+            } 
             
         }
     })
