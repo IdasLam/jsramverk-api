@@ -144,18 +144,29 @@ io.on('connection', (socket) => {
 
     socket.on('updatedAcess', async (doc: Doc) => {
         const oldDoc = await document.findDocument(doc._id)
-        await document.addDocumentAccess(doc._id, doc.access)
+        const validateEmail = (email: string) => {
+            const re =
+                /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            return re.test(email)
+        }
+
+        const allUsers = [...new Set(doc.access)].filter(user => validateEmail(user) ? user : null)
+        await document.addDocumentAccess(doc._id, allUsers)
+
         const newDoc = await document.findDocument(doc._id)
 
         const isAdding = newDoc.access.length > oldDoc.access.length
 
         const docToLoop = isAdding ? newDoc : oldDoc
+
         
         if (!!socket.handshake.headers.cookie) {
             await Promise.all(docToLoop.access.map(async (user: string) => {
-                const allUsersDoc = await document.allDocuments(user) as Doc[]
-                
-                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+                if (validateEmail(user)) {
+                    const allUsersDoc = await document.allDocuments(user) as Doc[]
+                    
+                    io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+                }
             }))
 
             if (isAdding) {
