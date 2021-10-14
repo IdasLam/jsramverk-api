@@ -6,6 +6,8 @@ type DocumentType = {
     title: string,
     content: string
     access?: string[]
+    type: 'code' | 'text'
+    code: string
 }
 
 export const findDocument = async (_id: string): Promise<DocumentType> => {
@@ -15,12 +17,13 @@ export const findDocument = async (_id: string): Promise<DocumentType> => {
 }
 
 
-export const saveDocument = async ({_id, title, content}: DocumentType) => {
+export const saveDocument = async ({_id, title, content, code}: DocumentType) => {
     const {Documents} = await DB
 
     await Documents.updateOne({_id}, {
         title,
-        content
+        content,
+        code
     })
 }
 
@@ -52,4 +55,17 @@ export const addDocumentAccess = async (_id: string, usernames: string[]) => {
     await Documents.updateOne({_id}, {access: usernames}) 
 
     return findDocument(_id)
+}
+
+export const changeType = async (_id: string, type: 'code' | 'text') => {
+    const {Documents} = await DB
+    let newType: 'code' | 'text' = 'text'
+
+    if (type === 'code') {
+        newType = 'text'
+    } else {
+        newType = 'code'
+    }
+
+    await Documents.updateOne({_id}, {type: newType})
 }
