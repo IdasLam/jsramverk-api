@@ -13,6 +13,8 @@ type Doc = {
     title: string
     content: string
     access: string[]
+    type: 'code' | 'text'
+    code: string
 }
 
 const port = process.env.PORT || 1337;
@@ -178,6 +180,24 @@ io.on('connection', (socket) => {
                 await sendInvite(newUsers, doc.title)
             } 
             
+        }
+    })
+
+    socket.on('changeType', async (doc: Doc) => {
+        if (!!socket.handshake.headers.cookie) {
+            const username = getUsername(socket.handshake.headers.cookie)
+            
+            await document.changeType(doc._id, doc.type)
+            
+            const users = doc.access
+            users.forEach(async (user: string) => {
+                
+                // if (user === username) return
+
+                const allUsersDoc = await document.allDocuments(user)
+
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            })
         }
     })
 
