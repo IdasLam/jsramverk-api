@@ -34,12 +34,12 @@ router.post('/find', async (req, res) => {
 
 router.post('/save', async (req, res) => {
     const {username} = await decoder(req)
-    const {_id, title, content} = req.body
+    const {_id, title, content, code}: document.DocumentType = req.body
 
     try {
         if (!_id) {
             const id = (await document.newDocument(username))._id as string
-            await document.saveDocument({_id: id, title, content})
+            await document.saveDocument({_id: id, title, content, code})
 
             const data = {
                 data: {
@@ -48,7 +48,7 @@ router.post('/save', async (req, res) => {
             };
             res.json(data)
         } else {
-            await document.saveDocument({_id, title, content})
+            await document.saveDocument({_id, title, content, code})
             const data = {
                 data: {
                     _id
