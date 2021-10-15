@@ -1,12 +1,12 @@
 import { Document } from 'mongoose'
 import DB from '../schemas/index'
 
-type DocumentType = {
+export type DocumentType = {
     _id: string, 
     title: string,
     content: string
     access?: string[]
-    type: 'code' | 'text'
+    type?: 'code' | 'text'
     code: string
 }
 
