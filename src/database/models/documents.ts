@@ -45,7 +45,6 @@ export const saveDocument = async ({_id, title, content, code}: DocumentType) =>
     const allComment = doc.comments
 
     const filteredComments = allComment.filter(comment => doc.content.includes(comment?._id))
-
     await Documents.updateOne({_id}, {
         comments: filteredComments
     })
