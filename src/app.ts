@@ -7,6 +7,8 @@ import * as document from './database/models/documents'
 import cookie from 'cookie'
 import jwt from 'jsonwebtoken'
 import { sendInvite } from './helper/nodemailer'
+import { addComentToText } from './helper/comment'
+import { Comment } from './database/schemas/documents'
 
 type Doc = {
     _id: string
@@ -15,6 +17,15 @@ type Doc = {
     access: string[]
     type: 'code' | 'text'
     code: string
+    comments?: Comment[]
+}
+
+type CommentData = {
+    comment: string
+    y: number
+    start: number
+    end: number
+    selected: string
 }
 
 const port = process.env.PORT || 1337;
@@ -201,6 +212,30 @@ io.on('connection', (socket) => {
         }
     })
 
+    socket.on('comment', async ({id, data}: {id: string, data: CommentData} ) => {
+        if (!!socket.handshake.headers.cookie) {
+            const username = getUsername(socket.handshake.headers.cookie)
+            
+            const doc = await document.findDocument(id)
+
+            // send await to helper to modify document
+            try {
+                await addComentToText(id, data, username)
+            } catch(err) {
+                console.error(err)
+            }
+            // update everyones doc
+
+            const users = doc.access
+            users.forEach(async (user: string) => {
+                
+                const allUsersDoc = await document.allDocuments(user)
+
+                io.in(`username=${user}`).emit('allDocs', allUsersDoc)
+            })
+        }
+    })
+
     socket.on('close', () => {
         socket.disconnect()
     })
@@ -210,4 +245,4 @@ io.on('connection', (socket) => {
     })
 });
 
-export {io}
+export {io, CommentData}
