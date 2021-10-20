@@ -47,7 +47,7 @@ export const addComentToText = async (id: string, data: CommentData, usernamne: 
         const right = content.slice(endIndex)
 
 
-        const commentId = await document.saveComment(id, {selected: data.selected, y: data.y, comment: data.comment, user: usernamne, date: (new Date()).toString()})
+        const commentId = await document.saveComment(id, {selected: data.selected, y: data.start, comment: data.comment, user: usernamne, date: (new Date()).toString()})
         // add id
         const insert = `<comment id="${commentId}">${foundWord}</comment>`
         
