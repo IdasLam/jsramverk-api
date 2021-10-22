@@ -80,11 +80,11 @@ export const addDocumentAccess = async (_id: string, usernames: string[]) => {
     return findDocument(_id)
 }
 
-export const changeType = async (_id: string, type: 'code' | 'text') => {
+export const changeType = async (_id: string, oldType: 'code' | 'text') => {
     const {Documents} = await DB
     let newType: 'code' | 'text' = 'text'
 
-    if (type === 'code') {
+    if (oldType === 'code') {
         newType = 'text'
     } else {
         newType = 'code'
