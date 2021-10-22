@@ -5,7 +5,7 @@ export const addComentToText = async (id: string, data: CommentData, usernamne: 
     // insert end then front
     const doc = await document.findDocument(id)
     let content = (doc).content
-
+    
     let contentNoHtml = content.replace(/<\/comment[^>]*>/gi, '')
     contentNoHtml = contentNoHtml.replace(/<\/ol[^>]*>/gi, '')
     contentNoHtml = contentNoHtml.replace(/<[^>]*><br><\/[^>]*>/gi, '\n')
@@ -14,7 +14,7 @@ export const addComentToText = async (id: string, data: CommentData, usernamne: 
     contentNoHtml = contentNoHtml.replace(/&nbsp; ?/g, ' ')
     contentNoHtml = contentNoHtml.replace(/<[^>]*>/g, '')
     let noHtmlIndexes: number[] = []
-
+    
     while (contentNoHtml.indexOf(data.selected) != -1) {
         const index = contentNoHtml.indexOf(data.selected)
         contentNoHtml = contentNoHtml.slice(index + data.selected.length)
