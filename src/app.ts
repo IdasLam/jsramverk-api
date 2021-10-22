@@ -26,6 +26,7 @@ type CommentData = {
     start: number
     end: number
     selected: string
+    _id?: string
 }
 
 const port = process.env.PORT || 1337;
