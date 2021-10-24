@@ -74,13 +74,24 @@ router.post('/delete', async (req, res) => {
 });
 
 router.post('/download-pdf', async (req, res) => {
-    const {_id} = req.body
-    const doc = await document.findDocument(_id)
-
-    const buffer = await generatePdf(doc.content)
-
-    res.header('Content-type','application/pdf')
-    res.send(buffer)
+    try {
+        const {_id} = req.body
+        const doc = await document.findDocument(_id)
+    
+        if (doc) {
+            const buffer = await generatePdf(doc.content)
+        
+            res.header('Content-type','application/pdf')
+            res.send(buffer)
+        }
+    } catch (err) {
+        console.error(err)
+        try {
+            return res.status(500).send(err.toString())
+        } catch {
+            res.status(500).send(err)
+        }
+    }
 });
 
 export default router
