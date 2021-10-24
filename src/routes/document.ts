@@ -4,7 +4,7 @@ import * as document from '../database/models/documents'
 import router from './router'
 import {io} from '../app'
 import decoder from '../helper/jwt'
-import generatePdf from '../../src/helper/puppeteer'
+import generatePdf from '../helper/puppeteer'
 
 
 router.get('/all', async (req, res) => {
